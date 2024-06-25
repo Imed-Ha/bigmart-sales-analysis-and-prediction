@@ -9,7 +9,9 @@ This repository contains a comprehensive analysis and predictive modeling on the
 ## Repository Structure
 bigmart-sales-analysis-prediction/
 ├── data/
+
 │ ├── raw/ # Raw data files
+
 │ ├── processed/ # Processed data files
 ├── notebooks/
 │ ├── bigmart_sales_data_analysis_and_prediction.ipynb # Jupyter notebook with analysis and prediction
