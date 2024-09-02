@@ -1,35 +1,36 @@
 import pandas as pd
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, LabelEncoder
 
 def preprocess_data(data):
-    # Make a copy to avoid modifying the original DataFrame
+    # Copy the data to avoid modifying the original DataFrame
     data = data.copy()
 
-    # Handling missing values
+    # Handle missing values based on the notebook logic
     data['Item_Weight'] = data['Item_Weight'].fillna(data['Item_Weight'].mean())
     data['Outlet_Size'] = data['Outlet_Size'].fillna('Medium')
 
-    # Feature engineering
-    data['Item_Fat_Content'] = data['Item_Fat_Content'].replace({'LF': 'Low Fat', 'reg': 'Regular', 'low fat': 'Low Fat'})
+    # Feature engineering based on the notebook logic
+    data['Item_Fat_Content'] = data['Item_Fat_Content'].replace({
+        'LF': 'Low Fat', 'reg': 'Regular', 'low fat': 'Low Fat'
+    })
     data['New_Item_Type'] = data['Item_Identifier'].apply(lambda x: x[:2])
     data['New_Item_Type'] = data['New_Item_Type'].map({
-        'FD': 'Food',
-        'NC': 'Non-Consumable',
-        'DR': 'Drinks'
+        'FD': 'Food', 'NC': 'Non-Consumable', 'DR': 'Drinks'
     })
-    data['New_Item_Type'] = data['New_Item_Type'].fillna('Other')
 
-    # Encoding categorical variables
-    data = pd.get_dummies(data, columns=['Item_Fat_Content', 'Outlet_Size', 'Outlet_Location_Type', 'New_Item_Type'], drop_first=True)
-    
-    # Normalize or scale features if necessary
+    # Drop unnecessary columns as identified in the notebook
+    data = data.drop(columns=['Item_Identifier', 'Outlet_Identifier'])
+
+    # Encode categorical variables based on the notebook logic
+    label_encoder = LabelEncoder()
+    data['Item_Fat_Content'] = label_encoder.fit_transform(data['Item_Fat_Content'])
+
+    # One-hot encoding for other categorical variables
+    data = pd.get_dummies(data, columns=['Item_Type', 'Outlet_Type'], drop_first=True)
+
+    # Scale numerical features
     scaler = StandardScaler()
     numeric_features = ['Item_Weight', 'Item_Visibility', 'Item_MRP']
     data[numeric_features] = scaler.fit_transform(data[numeric_features])
-    
-    return data
 
-if __name__ == "__main__":
-    train_data = pd.read_csv('../data/raw/Train.csv')
-    processed_data = preprocess_data(train_data)
-    processed_data.to_csv('../data/processed/processed_train.csv', index=False)
+    return data
